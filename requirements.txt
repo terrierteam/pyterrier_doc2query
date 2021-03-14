@@ -1,0 +1,4 @@
+python-terrier
+pandas
+transformers
+torch
