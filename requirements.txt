@@ -2,3 +2,4 @@ python-terrier
 pandas
 transformers
 torch
+sentencepiece
