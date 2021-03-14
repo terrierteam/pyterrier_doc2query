@@ -30,7 +30,6 @@ doc2query.transform(pd.DataFrame([{"docno" : "d1", "text" : sample_doc]]))
 The resulting dataframe returned by transform() will have an additional `"query_gen"` column, which
 contains the generated queries, such as:
 
-|-------|-----------|
 | docno | querygen  |
 |-------|-----------|
 | "d1"  | 'what was the importance of the manhattan project to the united states atom project? what influenced the success of the united states why was the manhattan project a success? why was it important' |
