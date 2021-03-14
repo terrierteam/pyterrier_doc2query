@@ -68,12 +68,11 @@ bm25 >> pt.get_text(dataset) >> doc2query >> pt.text.scorer(body_attr="querygen"
 
 ```
 
-
 ## Examples
 
 Checkout out the notebooks, even on Colab:
 
- - TODO
+ - Vaswani [Github](https://github.com/terrierteam/pyterrier_doc2query/blob/master/pyterrier_doc2query_vaswani.ipynb) [Colab](https://colab.research.google.com/github/terrierteam/pyterrier_doc2query/blob/master/pyterrier_doc2query_vaswani.ipynb)
 
 ## Implementation Details
 
