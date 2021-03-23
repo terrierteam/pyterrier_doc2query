@@ -12,12 +12,16 @@ class Doc2Query(ApplyGenericTransformer):
                  num_samples=3, 
                  batch_size=4, 
                  doc_attr="text", 
+                 append=False, 
                  out_attr="querygen", 
                  verbose=True):
       
         self.num_samples = num_samples
         self.doc_attr = doc_attr
+        self.append = append
         self.out_attr = out_attr
+        if append:
+          assert out_attr == 'querygen', "append=True cannot be used with out_attr"
         self.verbose = verbose
         self.batch_size = batch_size
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -37,8 +41,13 @@ class Doc2Query(ApplyGenericTransformer):
           for batch_rows in iter:
             docs = [getattr(row, self.doc_attr) for row in batch_rows]
             gens = self._doc2query(docs)
+            if self.append:
+              gens = [f'{getattr(row, self.doc_attr)} {gen}' for row, gen in zip(batch_rows, gens)]
             output.extend(gens)
-          df[self.out_attr] = output
+          if self.append:
+            df[self.doc_attr] = output # replace doc content
+          else:
+            df[self.out_attr] = output # add new column
           return df
         super().__init__(_add_attr)
 
