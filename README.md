@@ -16,7 +16,7 @@ You will also need a fine-tuned checkpoint (unzipped) for the T5 model from the 
 A Doc2Query object has a transform() function, which takes the text of each document, and suggests questions
 for that text. 
 
-```
+```python
 
 sample_doc = "The presence of communication amid scientific minds was equally important to the success of the Manhattan Project as scientific intellect was. The only cloud hanging over the impressive achievement of the atomic researchers and engineers is what their success truly meant; hundreds of thousands of innocent lives obliterated"
 
