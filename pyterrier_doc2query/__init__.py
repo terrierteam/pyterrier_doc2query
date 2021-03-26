@@ -1,10 +1,10 @@
 import pyterrier as pt
 import torch
-#from transformers import T5Config, T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Config, T5Tokenizer, T5ForConditionalGeneration
 
-from transformers.configuration_t5 import T5Config
-from transformers.tokenization_t5 import T5Tokenizer
-from transformers.modeling_t5 import T5ForConditionalGeneration
+#from transformers.configuration_t5 import T5Config
+#from transformers.tokenization_t5 import T5Tokenizer
+#from transformers.modeling_t5 import T5ForConditionalGeneration
 
 from pyterrier.transformer import ApplyGenericTransformer
 from more_itertools import chunked
