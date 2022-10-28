@@ -1,5 +1,7 @@
 # PyTerrier_doc2query
 
+**New: Check out our interactive demo on [🤗 HuggingFace Spaces](https://huggingface.co/spaces/macavaney/pyterrier_doc2query)**
+
 This is the [PyTerrier](https://github.com/terrier-org/pyterrier) plugin for the [docTTTTTquery](https://github.com/castorini/docTTTTTquery) approach for document expansion by query prediction [Nogueira20].
 
 ## Installation
