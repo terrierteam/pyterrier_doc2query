@@ -46,7 +46,7 @@ class Doc2Query(pt.Transformer):
               docs = list(docs) # so we can refernece it again when self.append
               gens = self._doc2query(docs)
               if self.append:
-                  gens = [f'{doc} {gen}' for doc, gen in zip(docs, gens)]
+                  gens = [f'{doc}\n{gen}' for doc, gen in zip(docs, gens)]
               output.extend(gens)
           if self.append:
               df = df.assign(**{self.doc_attr: output}) # replace doc content
@@ -70,5 +70,5 @@ class Doc2Query(pt.Transformer):
             top_k=10,
             num_return_sequences=self.num_samples)
       outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
-      rtr = [' '.join(gens) for gens in chunked(outputs, self.num_samples)]
+      rtr = ['\n'.join(gens) for gens in chunked(outputs, self.num_samples)]
       return rtr
