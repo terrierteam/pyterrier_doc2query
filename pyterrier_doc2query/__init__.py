@@ -1,26 +1,22 @@
+import math
 import pyterrier as pt
 import torch
 from transformers import T5Config, T5Tokenizer, T5ForConditionalGeneration
-
-#from transformers.configuration_t5 import T5Config
-#from transformers.tokenization_t5 import T5Tokenizer
-#from transformers.modeling_t5 import T5ForConditionalGeneration
-
-from pyterrier.transformer import ApplyGenericTransformer
 from more_itertools import chunked
 from typing import List
 import re
-class Doc2Query(ApplyGenericTransformer):    
-    def __init__(self, 
-                 checkpoint='model.ckpt-1004000', 
-                 base_model='t5-base', 
-                 num_samples=3, 
-                 batch_size=4, 
-                 doc_attr="text", 
-                 append=False, 
-                 out_attr="querygen", 
-                 verbose=True):
-      
+
+class Doc2Query(pt.Transformer):
+    def __init__(self,
+                 checkpoint='macavaney/doc2query-t5-base-msmarco',
+                 num_samples=3,
+                 batch_size=4,
+                 doc_attr="text",
+                 append=False,
+                 out_attr="querygen",
+                 verbose=False,
+                 device=None):
+
         self.num_samples = num_samples
         self.doc_attr = doc_attr
         self.append = append
@@ -29,43 +25,43 @@ class Doc2Query(ApplyGenericTransformer):
           assert out_attr == 'querygen', "append=True cannot be used with out_attr"
         self.verbose = verbose
         self.batch_size = batch_size
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        if device is None:
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        else:
+            self.device = torch.device(device)
         self.pattern = re.compile("^\\s*http\\S+")
-        self.tokenizer = T5Tokenizer.from_pretrained(base_model)
-        config = T5Config.from_pretrained(base_model)
-        self.model = T5ForConditionalGeneration.from_pretrained(
-            checkpoint, from_tf=True, config=config)
+        self.tokenizer = T5Tokenizer.from_pretrained(checkpoint)
+        self.model = T5ForConditionalGeneration.from_pretrained(checkpoint)
         self.model.to(self.device)
         self.model.eval()
 
-        def _add_attr(df):
-          iter = chunked(df.itertuples(), self.batch_size)
+    def transform(self, df):
+          if self.doc_attr not in df.columns:
+              raise ValueError(f'{self.doc_attr} missing')
+          it = chunked(iter(df[self.doc_attr]), self.batch_size)
           if self.verbose:
-            iter = pt.tqdm(iter, total=len(df)/self.batch_size, unit='d')
-          output=[]
-          for batch_rows in iter:
-            docs = [getattr(row, self.doc_attr) for row in batch_rows]
-            gens = self._doc2query(docs)
-            if self.append:
-              gens = [f'{getattr(row, self.doc_attr)} {gen}' for row, gen in zip(batch_rows, gens)]
-            output.extend(gens)
+              it = pt.tqdm(it, total=math.ceil(len(df)/self.batch_size), unit='d')
+          output = []
+          for docs in it:
+              docs = list(docs) # so we can refernece it again when self.append
+              gens = self._doc2query(docs)
+              if self.append:
+                  gens = [f'{doc} {gen}' for doc, gen in zip(docs, gens)]
+              output.extend(gens)
           if self.append:
-            df[self.doc_attr] = output # replace doc content
+              df = df.assign(**{self.doc_attr: output}) # replace doc content
           else:
-            df[self.out_attr] = output # add new column
+              df = df.assign(**{self.out_attr: output}) # add new column
           return df
-        super().__init__(_add_attr)
-
-        print("Doc2query using %s" % str(self.device))
 
     def _doc2query(self, docs : List[str]):
 
       docs = [re.sub(self.pattern, "", doc) for doc in docs]
       with torch.no_grad():
-        input_ids = self.tokenizer(docs, 
+        input_ids = self.tokenizer(docs,
                                    max_length=64,
-                                   return_tensors='pt', 
-                                   padding=True, 
+                                   return_tensors='pt',
+                                   padding=True,
                                    truncation=True).input_ids.to(self.device)
         outputs = self.model.generate(
             input_ids=input_ids,
@@ -73,9 +69,6 @@ class Doc2Query(ApplyGenericTransformer):
             do_sample=True,
             top_k=10,
             num_return_sequences=self.num_samples)
-      rtr = []
-      for i in range(0, len(docs)):
-        offset = i * self.num_samples
-        rtr.append(' '.join([self.tokenizer.decode(outputs[offset+j], skip_special_tokens=True) for j in range(self.num_samples)]))
-
+      outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
+      rtr = [' '.join(gens) for gens in chunked(outputs, self.num_samples)]
       return rtr
