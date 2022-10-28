@@ -8,9 +8,6 @@ This repostory can be installed using Pip.
 
     pip install --upgrade git+https://github.com/terrierteam/pyterrier_doc2query.git
 
-You will also need a fine-tuned checkpoint (unzipped) for the T5 model from the [docTTTTTquery repository](https://github.com/castorini/docTTTTTquery#data-and-trained-models-ms-marco-passage-ranking-dataset).
-
-
 ## What does it do?
 
 A Doc2Query object has a transform() function, which takes the text of each document, and suggests questions
@@ -22,12 +19,12 @@ sample_doc = "The presence of communication amid scientific minds was equally im
 
 import pyterrier_doc2query
 import pandas as pd
-doc2query = pyterrier_doc2query.Doc2Query("/path/to/checkpoint", out_attr="text")
+doc2query = pyterrier_doc2query.Doc2Query()
 doc2query.transform(pd.DataFrame([{"docno" : "d1", "text" : sample_doc]]))
 
 ```
 
-The resulting dataframe returned by transform() will have an additional `"query_gen"` column, which
+The resulting dataframe returned by transform() will have an additional `"querygen"` column, which
 contains the generated queries, such as:
 
 | docno | querygen  |
@@ -37,16 +34,23 @@ contains the generated queries, such as:
 As a PyTerrier transformer, there are lots of ways to introduce Doc2query into a PyTerrier retrieval
 process.
 
+By default, the plugin loads [`macavaney/doc2query-t5-base-msmarco`](https://huggingface.co/macavaney/doc2query-t5-base-msmarco), which is a a version of [the checkpoint released by the original authors](https://git.uwaterloo.ca/jimmylin/doc2query-data/raw/master/T5-passage/t5-base.zip), converted to pytorch format.
+You can load another T5 model by passing another huggingface model name (or path to model on the file system) by passing it as the first argument:
+
+```python
+doc2query = pyterrier_doc2query.Doc2Query('some/other/model')
+```
+
 ## Using Doc2Query for Indexing
 
 
-Then, indexing is as easy as instantiating the Doc2Query object and a PyTerrier indexer, pointing at the (unzipped) checkpoint and the directory in which you wish to create an index.
+Then, indexing is as easy as instantiating the Doc2Query object and a PyTerrier indexer:
 
 ```python
 
 dataset = pt.get_dataset("irds:vaswani")
 import pyterrier_doc2query
-doc2query = pyterrier_doc2query.Doc2Query("/path/to/checkpoint", out_attr="text")
+doc2query = pyterrier_doc2query.Doc2Query(append=True) # append generated queries to the orignal document text
 indexer = doc2query >> pt.IterDictIndexer(index_loc)
 indexer.index(dataset.get_corpus_iter())
 ```
@@ -59,8 +63,7 @@ at indexing time.
 ```python
 
 import pyterrier_doc2query
-doc2query = pyterrier_doc2query.Doc2Query("/path/to/checkpoint", out_attr="querygen")
-
+doc2query = pyterrier_doc2query.Doc2Query()
 
 dataset = pt.get_dataset("irds:vaswani")
 bm25 = pt.BatchRetrieve(pt.get_dataset("vaswani").get_index(), wmodel="BM25")
@@ -70,7 +73,7 @@ bm25 >> pt.get_text(dataset) >> doc2query >> pt.text.scorer(body_attr="querygen"
 
 ## Examples
 
-Checkout out the notebooks, even on Colab:
+Check out out the notebooks, even on Colab:
 
  - Vaswani [[Github](https://github.com/terrierteam/pyterrier_doc2query/blob/master/pyterrier_doc2query_vaswani.ipynb)] [[Colab](https://colab.research.google.com/github/terrierteam/pyterrier_doc2query/blob/master/pyterrier_doc2query_vaswani.ipynb)]
 
@@ -86,3 +89,4 @@ We use a PyTerrier transformer to rewrite documents by doc2query.
 ## Credits
 
 - Craig Macdonald, University of Glasgow
+- Sean MacAvaney, University of Glasgow
