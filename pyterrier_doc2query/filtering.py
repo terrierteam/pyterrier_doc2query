@@ -48,13 +48,15 @@ class QueryFilter(pt.Transformer):
         assert all(c in inp.columns for c in ['querygen', 'querygen_score'])
         if self.t is None:
             # estimate t based on the percentile from this batch
-            t = np.percentile(np.concatenate(res['querygen_score']), self.p * 100)
+            t = np.percentile(np.concatenate(inp['querygen_score']), self.p * 100)
         else:
             t = self.t
         querygen = inp[['querygen', 'querygen_score']].apply(lambda row: '\n'.join(q for q, s in zip(row['querygen'].split('\n'), row['querygen_score']) if s >= t), axis='columns')
         inp = inp.assign(querygen=querygen)
         if self.append:
             inp = inp.assign(text=inp['text'] + '\n' + inp['querygen'])
-            inp = inp.drop('querygen', axis='columns')
-        inp = inp.drop('querygen_score', axis='columns')
+            inp = inp.drop(['querygen', 'querygen_score'], axis='columns')
+        else:
+            querygen_score = inp['querygen_score'].apply(lambda row: row[row >= t])
+            inp = inp.assign(querygen_score=querygen_score)
         return inp
