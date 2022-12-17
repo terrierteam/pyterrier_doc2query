@@ -3,3 +3,4 @@ pandas
 transformers
 torch
 sentencepiece
+GitPython
