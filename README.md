@@ -67,8 +67,8 @@ then filtering out the least relevant ones (using `QueryFilter`).
 from pyterrier_doc2query import Doc2Query, QueryScorer, QueryFilter
 from pyterrier_dr import ElectraScorer
 
-doc2query = Doc2Query('macavaney/doc2query-t5-base-msmarco', append=False, num_samples=5)
-scorer = ElectraScorer('crystina-z/monoELECTRA_LCE_nneg31')
+doc2query = Doc2Query(append=False, num_samples=5)
+scorer = ElectraScorer()
 indexer = pt.IterDictIndexer('./index')
 pipeline = doc2query >> QueryScorer(scorer) >> QueryFilter(t=3.21484375) >> indexer # t=3.21484375 is the 70th percentile for generated queries on MS MARCO
 
