@@ -57,6 +57,24 @@ indexer = doc2query >> pt.IterDictIndexer(index_loc)
 indexer.index(dataset.get_corpus_iter())
 ```
 
+## Doc2Query&minus;&minus: When Less is More
+
+The performance of Doc2Query can be significantly improved by removing queries that are not relevant to the
+documents that generated them. This involves first scoring the generated queries (using `QueryScorer`) and
+then filtering out the least relevant ones (using `QueryFilter`).
+
+```python
+from pyterrier_doc2query import Doc2Query, QueryScorer, QueryFilter
+from pyterrier_dr import ElectraScorer
+
+doc2query = Doc2Query('macavaney/doc2query-t5-base-msmarco', append=False, num_samples=5)
+scorer = ElectraScorer('crystina-z/monoELECTRA_LCE_nneg31')
+indexer = pt.IterDictIndexer('./index')
+pipeline = doc2query >> QueryScorer(scorer) >> QueryFilter(t=3.21484375) >> indexer # t=3.21484375 is the 70th percentile for generated queries on MS MARCO
+
+indexer.index(dataset.get_corpus_iter())
+```
+
 ## Using Doc2Query for Retrieval
 
 Doc2query can also be used at retrieval time (i.e. on retrieved documents) rather than 
@@ -86,6 +104,7 @@ We use a PyTerrier transformer to rewrite documents by doc2query.
 ## References
 
   - [Nogueira20]: Rodrigo Nogueira and Jimmy Lin. From doc2query to docTTTTTquery. https://cs.uwaterloo.ca/~jimmylin/publications/Nogueira_Lin_2019_docTTTTTquery-v2.pdf
+  - [MacAvaney23]: Mitko Gospodinov, Sean MacAvaney, and Craig Macdonald. Doc2Query--: When Less is More. ECIR 2023.
   - [Macdonald20]: Craig Macdonald, Nicola Tonellotto. Declarative Experimentation inInformation Retrieval using PyTerrier. Craig Macdonald and Nicola Tonellotto. In Proceedings of ICTIR 2020. https://arxiv.org/abs/2007.14271
 
 ## Credits
