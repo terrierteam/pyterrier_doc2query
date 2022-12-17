@@ -4,3 +4,4 @@ transformers
 torch
 sentencepiece
 GitPython
+npids
