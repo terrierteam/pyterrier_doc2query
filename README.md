@@ -57,7 +57,7 @@ indexer = doc2query >> pt.IterDictIndexer(index_loc)
 indexer.index(dataset.get_corpus_iter())
 ```
 
-## Doc2Query&minus;&minus: When Less is More
+## Doc2Query&minus;&minus;: When Less is More
 
 The performance of Doc2Query can be significantly improved by removing queries that are not relevant to the
 documents that generated them. This involves first scoring the generated queries (using `QueryScorer`) and
