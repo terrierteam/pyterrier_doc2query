@@ -4,7 +4,7 @@
 
 **New: Improve effectiveness and efficiency using Doc2Query&minus;&minus;**
 
-This is the [PyTerrier](https://github.com/terrier-org/pyterrier) plugin for the [docTTTTTquery](https://github.com/castorini/docTTTTTquery) approach for document expansion by query prediction [Nogueira20].
+This is the [PyTerrier](https://github.com/terrier-org/pyterrier) plugin for the [docTTTTTquery](https://github.com/castorini/docTTTTTquery) [Nogueira20] and Doc2Query&minus;&minus; [Gospodinov23] approaches for document expansion by query prediction.
 
 ## Installation
 
@@ -106,7 +106,7 @@ We use a PyTerrier transformer to rewrite documents by doc2query.
 ## References
 
   - [Nogueira20]: Rodrigo Nogueira and Jimmy Lin. From doc2query to docTTTTTquery. https://cs.uwaterloo.ca/~jimmylin/publications/Nogueira_Lin_2019_docTTTTTquery-v2.pdf
-  - [MacAvaney23]: Mitko Gospodinov, Sean MacAvaney, and Craig Macdonald. Doc2Query--: When Less is More. ECIR 2023.
+  - [Gospodinov23]: Mitko Gospodinov, Sean MacAvaney, and Craig Macdonald. Doc2Query--: When Less is More. ECIR 2023.
   - [Macdonald20]: Craig Macdonald, Nicola Tonellotto. Declarative Experimentation inInformation Retrieval using PyTerrier. Craig Macdonald and Nicola Tonellotto. In Proceedings of ICTIR 2020. https://arxiv.org/abs/2007.14271
 
 ## Credits
