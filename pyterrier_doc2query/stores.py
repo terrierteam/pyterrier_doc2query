@@ -52,6 +52,25 @@ class Doc2QueryStore(pt.Indexer, Artefact):
                 json.dump({'type': 'doc2query_store'}, f_meta)
         return self
 
+    def lookup(self, docnos, limit_k=None):
+        single = False
+        if isinstance(docnos, str):
+            docnos = np.array([docnos])
+            single = True
+        queries, q_offsets, docnos_lookup = self.payload()
+        dids = docnos_lookup.inv[docnos]
+        if (dids == -1).sum() > 0:
+            raise ValueError(f"unknown docno(s) encountered: {docnos[dids == -1]}")
+        querygen = [_lz4_read(queries, s, e, limit_k) for s, e in zip(q_offsets[dids], q_offsets[dids+1])]
+        if single:
+            return {'querygen': querygen[0]}
+        return {'querygen': querygen}
+
+    def __iter__(self):
+        queries, q_offsets, docnos = self.payload()
+        for i, docno in enumerate(docnos):
+            yield {'docno': docno, 'querygen': _lz4_read(queries, q_offsets[i], q_offsets[i+1], limit_k=None)}
+
 
 class QueryScoreStore(pt.Indexer, Artefact):
     def __init__(self, path):
@@ -135,6 +154,26 @@ class QueryScoreStore(pt.Indexer, Artefact):
         scores, s_offsets, queries, q_offsets, docnos = self.payload()
         return np.percentile(scores, p)
 
+    def lookup(self, docnos, limit_k=None):
+        single = False
+        if isinstance(docnos, str):
+            docnos = np.array([docnos])
+            single = True
+        scores, s_offsets, queries, q_offsets, docnos_lookup = self.payload()
+        dids = docnos_lookup.inv[docnos]
+        if (dids == -1).sum() > 0:
+            raise ValueError(f"unknown docno(s) encountered: {docnos[dids == -1]}")
+        querygen = [_lz4_read(queries, s, e, limit_k) for s, e in zip(q_offsets[dids], q_offsets[dids+1])]
+        querygen_score = [np.array(scores[s:e][:limit_k]) for s, e in zip(s_offsets[dids], s_offsets[dids+1])]
+        if single:
+            return {'querygen': querygen[0], 'querygen_score': querygen_score[0]}
+        return {'querygen': querygen, 'querygen_score': querygen_score}
+
+    def __iter__(self):
+        scores, s_offsets, queries, q_offsets, docnos = self.payload()
+        for i, docno in enumerate(docnos):
+            yield {'docno': docno, 'querygen': _lz4_read(queries, q_offsets[i], q_offsets[i+1], limit_k=None), 'querygen_score': np.array(scores[s_offsets[i]:s_offsets[i+1]])}
+
 
 def _lz4_read(f, start, end, limit_k):
     if f.tell() != start:
@@ -148,26 +187,17 @@ def _lz4_read(f, start, end, limit_k):
 
 class QueryScoreStoreScorer(pt.Transformer):
     def __init__(self, scorer_store, limit_k=None):
-        self.scorer_store = scorer_store
+        self.store = scorer_store
         self.limit_k = limit_k
 
     def transform(self, inp):
-        scores, s_offsets, queries, q_offsets, docnos = self.scorer_store.payload()
-        dids = docnos.inv[inp.docno]
-        assert (dids == -1).sum() == 0, "unknown docno(s) encountered"
-        querygen = [_lz4_read(queries, s, e, self.limit_k) for s, e in zip(q_offsets[dids], q_offsets[dids+1])]
-        querygen_score = [np.array(scores[s:e][:self.limit_k]) for s, e in zip(s_offsets[dids], s_offsets[dids+1])]
-        return inp.assign(querygen=querygen, querygen_score=querygen_score)
+        return inp.assign(**self.store.lookup(inp.docno, self.limit_k))
 
 
 class Doc2QueryStoreGenerator(pt.Transformer):
     def __init__(self, d2q_store, limit_k=None):
-        self.d2q_store = d2q_store
+        self.store = d2q_store
         self.limit_k = limit_k
 
     def transform(self, inp):
-        queries, q_offsets, docnos = self.d2q_store.payload()
-        dids = docnos.inv[inp.docno]
-        assert (dids == -1).sum() == 0, "unknown docno(s) encountered"
-        querygen = [_lz4_read(queries, s, e, self.limit_k) for s, e in zip(q_offsets[dids], q_offsets[dids+1])]
-        return inp.assign(querygen=querygen)
+        return inp.assign(**self.store.lookup(inp.docno, self.limit_k))
