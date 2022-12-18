@@ -38,25 +38,18 @@ class QueryScorer(pt.Transformer):
 
 
 class QueryFilter(pt.Transformer):
-    def __init__(self, t=None, p=None, append=True):
-        assert t is not None or p is not None, 'Must provide either t (threshold) or p (percentile)'
+    def __init__(self, t, append=True):
         self.t = t
-        self.p = p
         self.append = append
 
     def transform(self, inp):
         assert all(c in inp.columns for c in ['querygen', 'querygen_score'])
-        if self.t is None:
-            # estimate t based on the percentile from this batch
-            t = np.percentile(np.concatenate(inp['querygen_score']), self.p * 100)
-        else:
-            t = self.t
-        querygen = inp[['querygen', 'querygen_score']].apply(lambda row: '\n'.join(q for q, s in zip(row['querygen'].split('\n'), row['querygen_score']) if s >= t), axis='columns')
-        inp = inp.assign(querygen=querygen)
+        inp = inp.reset_index(drop=True)
+        querygen = ['\n'.join(np.array(qs.split('\n'))[ss >= self.t].tolist()) for qs, ss in zip(inp['querygen'], inp['querygen_score'])]
         if self.append:
-            inp = inp.assign(text=inp['text'] + '\n' + inp['querygen'])
+            inp = inp.assign(text=inp['text'] + '\n' + pd.Series(querygen))
             inp = inp.drop(['querygen', 'querygen_score'], axis='columns')
         else:
             querygen_score = inp['querygen_score'].apply(lambda row: row[row >= t])
-            inp = inp.assign(querygen_score=querygen_score)
+            inp = inp.assign(querygen=querygen, querygen_score=querygen_score)
         return inp
