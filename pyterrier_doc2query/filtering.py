@@ -50,6 +50,6 @@ class QueryFilter(pt.Transformer):
             inp = inp.assign(text=inp['text'] + '\n' + pd.Series(querygen))
             inp = inp.drop(['querygen', 'querygen_score'], axis='columns')
         else:
-            querygen_score = inp['querygen_score'].apply(lambda row: row[row >= t])
+            querygen_score = inp['querygen_score'].apply(lambda row: row[row >= self.t])
             inp = inp.assign(querygen=querygen, querygen_score=querygen_score)
         return inp
