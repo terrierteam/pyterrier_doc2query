@@ -30,8 +30,8 @@ class Doc2QueryStore(pt.Indexer, Artefact):
             self._docnos = Lookup(self.path/'docnos.npids')
         return self._queries, self._queries_offsets, self._docnos
 
-    def generator(self, limit_k=None):
-        return Doc2QueryStoreGenerator(self, limit_k)
+    def generator(self, limit_k=None, append=False):
+        return Doc2QueryStoreGenerator(self, limit_k, append=append)
 
     def transform(self, inp):
         return self.generator()(inp)
@@ -195,9 +195,13 @@ class QueryScoreStoreScorer(pt.Transformer):
 
 
 class Doc2QueryStoreGenerator(pt.Transformer):
-    def __init__(self, d2q_store, limit_k=None):
+    def __init__(self, d2q_store, limit_k=None, append=False):
         self.store = d2q_store
         self.limit_k = limit_k
+        self.append = append
 
     def transform(self, inp):
+        res = self.store.lookup(inp.docno, self.limit_k)
+        if self.append:
+            return inp.assign(text=inp['text'] + '\n' + res['querygen'])
         return inp.assign(**self.store.lookup(inp.docno, self.limit_k))
