@@ -113,3 +113,4 @@ We use a PyTerrier transformer to rewrite documents by doc2query.
 
 - Craig Macdonald, University of Glasgow
 - Sean MacAvaney, University of Glasgow
+- Mitko Gospodinov, University of Glasgow
