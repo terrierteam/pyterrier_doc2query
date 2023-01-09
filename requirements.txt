@@ -3,3 +3,5 @@ pandas
 transformers
 torch
 sentencepiece
+GitPython
+npids

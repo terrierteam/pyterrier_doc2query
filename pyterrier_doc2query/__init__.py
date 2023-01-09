@@ -5,6 +5,10 @@ from transformers import T5Config, T5Tokenizer, T5ForConditionalGeneration
 from more_itertools import chunked
 from typing import List
 import re
+from .artefact import Artefact
+from .filtering import QueryScorer, QueryFilter
+from .stores import Doc2QueryStore, QueryScoreStore
+
 
 class Doc2Query(pt.Transformer):
     def __init__(self,
