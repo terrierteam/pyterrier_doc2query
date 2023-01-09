@@ -24,7 +24,7 @@ sample_doc = "The presence of communication amid scientific minds was equally im
 import pyterrier_doc2query
 import pandas as pd
 doc2query = pyterrier_doc2query.Doc2Query()
-doc2query.transform(pd.DataFrame([{"docno" : "d1", "text" : sample_doc]]))
+doc2query.transform(pd.DataFrame([{"docno" : "d1", "text" : sample_doc}]))
 
 ```
 
@@ -51,7 +51,8 @@ doc2query = pyterrier_doc2query.Doc2Query('some/other/model')
 Then, indexing is as easy as instantiating the Doc2Query object and a PyTerrier indexer:
 
 ```python
-
+import pyterrier as pt
+pt.init()
 dataset = pt.get_dataset("irds:vaswani")
 import pyterrier_doc2query
 doc2query = pyterrier_doc2query.Doc2Query(append=True) # append generated queries to the orignal document text
