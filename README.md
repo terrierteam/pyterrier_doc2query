@@ -78,6 +78,11 @@ pipeline = doc2query >> QueryScorer(scorer) >> QueryFilter(t=3.21484375) >> inde
 indexer.index(dataset.get_corpus_iter())
 ```
 
+We've also released pre-computed filter scores for various models on HuggingFace datasets:
+ - [macavaney/d2q-msmarco-passage-scores-electra](https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-electra)
+ - [macavaney/d2q-msmarco-passage-scores-monot5](https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-monot5)
+ - [macavaney/d2q-msmarco-passage-scores-tct](https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-tct)
+
 ## Using Doc2Query for Retrieval
 
 Doc2query can also be used at retrieval time (i.e. on retrieved documents) rather than 
