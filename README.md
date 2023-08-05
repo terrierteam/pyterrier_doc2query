@@ -75,7 +75,7 @@ scorer = ElectraScorer()
 indexer = pt.IterDictIndexer('./index')
 pipeline = doc2query >> QueryScorer(scorer) >> QueryFilter(t=3.21484375) >> indexer # t=3.21484375 is the 70th percentile for generated queries on MS MARCO
 
-indexer.index(dataset.get_corpus_iter())
+pipeline.index(dataset.get_corpus_iter())
 ```
 
 We've also released pre-computed filter scores for various models on HuggingFace datasets:
