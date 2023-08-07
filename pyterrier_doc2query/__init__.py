@@ -1,10 +1,11 @@
 import math
 import pyterrier as pt
 import torch
-from transformers import T5Config, T5Tokenizer, T5ForConditionalGeneration
+from transformers import T5Config, T5Tokenizer, T5TokenizerFast, T5ForConditionalGeneration
 from more_itertools import chunked
 from typing import List
 import re
+from warnings import warn
 from .artefact import Artefact
 from .filtering import QueryScorer, QueryFilter
 from .stores import Doc2QueryStore, QueryScoreStore
@@ -19,6 +20,7 @@ class Doc2Query(pt.Transformer):
                  append=False,
                  out_attr="querygen",
                  verbose=False,
+                 fast_tokenizer=False,
                  device=None):
 
         self.num_samples = num_samples
@@ -34,7 +36,11 @@ class Doc2Query(pt.Transformer):
         else:
             self.device = torch.device(device)
         self.pattern = re.compile("^\\s*http\\S+")
-        self.tokenizer = T5Tokenizer.from_pretrained(checkpoint)
+        if fast_tokenizer:
+            self.tokenizer = T5TokenizerFast.from_pretrained(checkpoint)
+        else:
+            warn('consider setting fast_tokenizer=True; it speeds up inference considerably')
+            self.tokenizer = T5Tokenizer.from_pretrained(checkpoint)
         self.model = T5ForConditionalGeneration.from_pretrained(checkpoint)
         self.model.to(self.device)
         self.model.eval()
