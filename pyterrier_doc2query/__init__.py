@@ -50,7 +50,7 @@ class Doc2Query(pt.Transformer):
               raise ValueError(f'{self.doc_attr} missing')
           it = chunked(iter(df[self.doc_attr]), self.batch_size)
           if self.verbose:
-              it = pt.tqdm(it, total=math.ceil(len(df)/self.batch_size), unit='d')
+              it = pt.tqdm(it, total=math.ceil(len(df)/self.batch_size), unit='d', desc='doc2query')
           output = []
           for docs in it:
               docs = list(docs) # so we can refernece it again when self.append
