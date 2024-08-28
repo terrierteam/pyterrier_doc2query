@@ -94,7 +94,7 @@ import pyterrier_doc2query
 doc2query = pyterrier_doc2query.Doc2Query()
 
 dataset = pt.get_dataset("irds:vaswani")
-bm25 = pt.BatchRetrieve(pt.get_dataset("vaswani").get_index(), wmodel="BM25")
+bm25 = pt.terrier.Retriever.from_dataset("vaswani", "terrier_stemmed", wmodel="BM25")
 bm25 >> pt.get_text(dataset) >> doc2query >> pt.text.scorer(body_attr="querygen", wmodel="BM25")
 
 ```
