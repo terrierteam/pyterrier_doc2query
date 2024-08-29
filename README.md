@@ -22,13 +22,12 @@ for that text.
 sample_doc = "The presence of communication amid scientific minds was equally important to the success of the Manhattan Project as scientific intellect was. The only cloud hanging over the impressive achievement of the atomic researchers and engineers is what their success truly meant; hundreds of thousands of innocent lives obliterated"
 
 import pyterrier_doc2query
-import pandas as pd
 doc2query = pyterrier_doc2query.Doc2Query()
-doc2query.transform(pd.DataFrame([{"docno" : "d1", "text" : sample_doc}]))
+doc2query([{"docno" : "d1", "text" : sample_doc}])
 
 ```
 
-The resulting dataframe returned by transform() will have an additional `"querygen"` column, which
+The resulting dataframe will have an additional `"querygen"` column, which
 contains the generated queries, such as:
 
 | docno | querygen  |
