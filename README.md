@@ -51,7 +51,6 @@ Then, indexing is as easy as instantiating the Doc2Query object and a PyTerrier 
 
 ```python
 import pyterrier as pt
-pt.init()
 dataset = pt.get_dataset("irds:vaswani")
 import pyterrier_doc2query
 doc2query = pyterrier_doc2query.Doc2Query(append=True) # append generated queries to the orignal document text
