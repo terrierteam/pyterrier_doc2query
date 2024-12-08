@@ -8,6 +8,7 @@ from more_itertools import chunked
 from typing import List
 import re
 from warnings import warn
+from .artefact import Artefact
 from .filtering import QueryScorer, QueryFilter
 from .stores import Doc2QueryStore, QueryScoreStore
 
@@ -85,4 +86,4 @@ class Doc2Query(pt.Transformer):
       return rtr
 
 
-__all__ = ['Doc2Query', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore']
+__all__ = ['Doc2Query', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore', 'Artefact']
