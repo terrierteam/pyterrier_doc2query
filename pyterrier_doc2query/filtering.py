@@ -1,19 +1,6 @@
 import numpy as np
 import pandas as pd
-import json
-import ir_datasets
-import math
 import pyterrier as pt
-import torch
-from transformers import T5Config, T5Tokenizer, T5ForConditionalGeneration
-from more_itertools import chunked
-from typing import List
-import re
-import more_itertools
-import itertools
-import torch
-import os
-from transformers import T5ForConditionalGeneration, T5Tokenizer, T5Config
 
 
 class QueryScorer(pt.Transformer):

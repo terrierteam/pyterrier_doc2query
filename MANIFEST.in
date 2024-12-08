@@ -1,0 +1,1 @@
+recursive-include pyterrier_doc2query *.rst

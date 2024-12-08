@@ -1,12 +1,13 @@
+__version__ = '0.1.0'
+
 import math
 import pyterrier as pt
 import torch
-from transformers import T5Config, T5Tokenizer, T5TokenizerFast, T5ForConditionalGeneration
+from transformers import T5Tokenizer, T5TokenizerFast, T5ForConditionalGeneration
 from more_itertools import chunked
 from typing import List
 import re
 from warnings import warn
-from .artefact import Artefact
 from .filtering import QueryScorer, QueryFilter
 from .stores import Doc2QueryStore, QueryScoreStore
 
@@ -82,3 +83,6 @@ class Doc2Query(pt.Transformer):
       outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
       rtr = ['\n'.join(gens) for gens in chunked(outputs, self.num_samples)]
       return rtr
+
+
+__all__ = ['Doc2Query', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore']

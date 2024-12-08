@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyterrier-doc2query"
+description = "PyTerrier components for doc2query"
+readme = "README.md"
+authors = [
+  {name = "Craig Macdonald", email = "craig.macdonald@glasgow.ac.uk"},
+  {name = "Sean MacAvaney", email = "sean.macavaney@glasgow.ac.uk"},
+]
+maintainers = [
+  {name = "Craig Macdonald", email = "craig.macdonald@glasgow.ac.uk"},
+  {name = "Sean MacAvaney", email = "sean.macavaney@glasgow.ac.uk"},
+]
+requires-python = ">=3.6"
+classifiers = [
+  "Programming Language :: Python",
+  "Operating System :: OS Independent",
+  "Topic :: Text Processing",
+  "Topic :: Text Processing :: Indexing",
+  "License :: OSI Approved :: MIT License",
+]
+dynamic = ["version", "dependencies"]
+
+[tool.setuptools.packages.find]
+exclude = ["tests"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pyterrier_doc2query.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+Repository = "https://github.com/terrierteam/pyterrier_doc2query"
+"Bug Tracker" = "https://github.com/terrierteam/pyterrier_doc2query/issues"
