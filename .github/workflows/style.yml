@@ -1,7 +1,7 @@
 name: style
 
 on:
-  push: {branches: [main]} # pushes to main
+  push: {branches: [master]} # pushes to master
   pull_request: {} # all PRs
 
 jobs:

@@ -1,7 +1,7 @@
 name: Test Python package
 
 on: 
-  push: {branches: [main]} # pushes to main
+  push: {branches: [master]} # pushes to master
   pull_request: {} # all PRs
   schedule: [cron: '0 12 * * 3'] # every Wednesday at noon
 
