@@ -16,8 +16,8 @@ A :class:`~pyterrier_doc2query.Doc2Query` transformer takes the text of each doc
 
 .. code-block:: python
 
-	import pyterrier_doc2query
-	doc2query = pyterrier_doc2query.Doc2Query()
+    import pyterrier_doc2query
+    doc2query = pyterrier_doc2query.Doc2Query()
     sample_doc = "The presence of communication amid scientific minds was equally important to the success of the Manhattan Project as scientific intellect was. The only cloud hanging over the impressive achievement of the atomic researchers and engineers is what their success truly meant; hundreds of thousands of innocent lives obliterated"
     doc2query([{"docno" : "d1", "text" : sample_doc}])
 
@@ -42,28 +42,47 @@ By default, the plugin loads `macavaney/doc2query-t5-base-msmarco <https://huggi
 Using Doc2Query for Indexing
 ----------------------------------------
 
-Indexing is as easy as instantiating the ``Doc2Query`` object and a PyTerrier indexer:
+You can index with Doc2Query by piping the results from :class:`~pyterrier_doc2query.Doc2Query` into an
+indexer. For instance,
 
 .. code-block:: python
+    :caption: Build a Terrier index over documents expanded with Doc2Query
 
     import pyterrier as pt
+    from pyterrier_doc2query import Doc2Query
     dataset = pt.get_dataset("irds:vaswani")
-    import pyterrier_doc2query
-    doc2query = pyterrier_doc2query.Doc2Query(append=True) # append generated queries to the original document text
+    doc2query = Doc2Query(append=True) # append generated queries to the original document text
     indexer = doc2query >> pt.IterDictIndexer(index_loc)
     indexer.index(dataset.get_corpus_iter())
 
-.. info::
+The generation process is expensive. Consider using :class:`pyterrier_caching.IndexerCache` to cache the
+generated queries in case you need them again.
 
-	The generation process is expensive. Consider using :class:`pyterrier_caching.IndexerCache` to cache the
-	generated queries in case you need them again.
+.. code-block:: python
+    :caption: Two-step indexing with Doc2Query: Cache scores, then index
+
+    import pyterrier as pt
+    from pyterrier_caching import IndexerCache
+    from pyterrier_doc2query import Doc2Query
+    dataset = pt.get_dataset("irds:vaswani")
+    doc2query = Doc2Query(append=True) # append generated queries to the original document text
+    # Step 1: Generate queries and cache them
+    cache = IndexerCache('doc2query.cache')
+    (doc2query >> cache).index(dataset.get_corpus_iter())
+    # Step 2: Index from the cache
+    indexer = pt.IterDictIndexer('doc2query.terrier')
+    indexer.index(cache.get_corpus_iter())
+
 
 Doc2Query--: When Less is More
 ----------------------------------------
 
-The performance of Doc2Query can be significantly improved by removing queries that are not relevant to the documents that generated them. This involves first scoring the generated queries (using ``QueryScorer``) and then filtering out the least relevant ones (using ``QueryFilter``).
+The performance of Doc2Query can be significantly improved by removing queries that are not relevant to the documents
+that generated them. This involves first scoring the generated queries (using :class:`~pyterrier_doc2query.QueryScorer`) and then
+filtering out the least relevant ones (using :class:`~pyterrier_doc2query.QueryFilter`).
 
 .. code-block:: python
+    :caption: Scoring and filtering queries from Doc2Query
 
     from pyterrier_doc2query import Doc2Query, QueryScorer, QueryFilter
     from pyterrier_dr import ElectraScorer
@@ -77,16 +96,19 @@ The performance of Doc2Query can be significantly improved by removing queries t
 
 We've also released pre-computed filter scores for various models on HuggingFace datasets:
 
-- `macavaney/d2q-msmarco-passage-scores-electra <https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-electra>`_
-- `macavaney/d2q-msmarco-passage-scores-monot5 <https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-monot5>`_
-- `macavaney/d2q-msmarco-passage-scores-tct <https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-tct>`_
+- `macavaney/d2q-msmarco-passage-scores-electra <https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-electra>`__
+- `macavaney/d2q-msmarco-passage-scores-monot5 <https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-monot5>`__
+- `macavaney/d2q-msmarco-passage-scores-tct <https://huggingface.co/datasets/macavaney/d2q-msmarco-passage-scores-tct>`__
 
 Using Doc2Query for Retrieval
 ----------------------------------------
 
-Doc2Query can also be used at retrieval time (i.e., on retrieved documents) rather than at indexing time.
+:class:`~pyterrier_doc2query.Doc2Query` can also be used at retrieval time (i.e., on retrieved documents) rather
+than at indexing time. This can be used in conjunction with :func:`pyterrier.text.scorer` to re-rank documents
+using Doc2Query.
 
 .. code-block:: python
+    :caption: Re-rank documents using Doc2Query
 
     import pyterrier_doc2query
     doc2query = pyterrier_doc2query.Doc2Query()
@@ -95,9 +117,27 @@ Doc2Query can also be used at retrieval time (i.e., on retrieved documents) rath
     bm25 = pt.terrier.Retriever.from_dataset("vaswani", "terrier_stemmed", wmodel="BM25")
     bm25 >> pt.get_text(dataset) >> doc2query >> pt.text.scorer(body_attr="querygen", wmodel="BM25")
 
+API Documentation
+----------------------------------------
+
+**Core Functionality**
+
+.. autoclass:: pyterrier_doc2query.Doc2Query
+
+**Filtering Poor Generated Queries**
+
+.. autoclass:: pyterrier_doc2query.QueryScorer
+.. autoclass:: pyterrier_doc2query.QueryFilter
+
+**Caching**
+
+.. autoclass:: pyterrier_doc2query.Doc2QueryStore
+.. autoclass:: pyterrier_doc2query.QueryScoreStore
 
 References
 ----------------------------------------
+
+.. cite.dblp:: journals/corr/abs-1904-08375
 
 .. cite:: doct5query
 	:citation: Nogueira and Lin. From doc2query to docTTTTTquery. 2019.
