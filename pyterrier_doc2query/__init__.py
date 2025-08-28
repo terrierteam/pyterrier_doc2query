@@ -1,7 +1,7 @@
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 import math
-import pyterrier as pt
+import pyterrier as pt, pyterrier_alpha as pta
 import pandas as pd
 import torch
 from transformers import T5Tokenizer, T5TokenizerFast, T5ForConditionalGeneration
@@ -62,8 +62,7 @@ class Doc2Query(pt.Transformer):
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Applied the query generation transformation."""
-        if self.doc_attr not in df.columns:
-            raise ValueError(f'{self.doc_attr} missing')
+        pta.validate.columns(df, includes=[self.doc_attr])
         it = chunked(iter(df[self.doc_attr]), self.batch_size)
         if self.verbose:
             it = pt.tqdm(it, total=math.ceil(len(df)/self.batch_size), unit='d', desc='doc2query')

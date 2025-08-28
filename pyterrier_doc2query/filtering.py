@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import pyterrier as pt
+import pyterrier as pt, pyterrier_alpha as pta
 
 
 class QueryScorer(pt.Transformer):
@@ -14,6 +14,7 @@ class QueryScorer(pt.Transformer):
 
     def transform(self, inp: pd.DataFrame) -> pd.DataFrame:
         """Applies the scoring transformation."""
+        pta.validate.result_frame(inp, extra_columns=['text', 'querygen'])
         slices = []
         scorer_inp = {
             'query': [],
