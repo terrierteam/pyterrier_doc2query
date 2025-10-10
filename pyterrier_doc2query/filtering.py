@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-import pyterrier as pt, pyterrier_alpha as pta
+import pyterrier as pt
+import pyterrier_alpha as pta
 
 
 class QueryScorer(pt.Transformer):
@@ -14,7 +15,7 @@ class QueryScorer(pt.Transformer):
 
     def transform(self, inp: pd.DataFrame) -> pd.DataFrame:
         """Applies the scoring transformation."""
-        pta.validate.result_frame(inp, extra_columns=['text', 'querygen'])
+        pta.validate.columns(inp, includes=['text', 'querygen'])
         slices = []
         scorer_inp = {
             'query': [],
@@ -44,7 +45,7 @@ class QueryFilter(pt.Transformer):
 
     def transform(self, inp: pd.DataFrame) -> pd.DataFrame:
         """Applies the filtering transformation."""
-        assert all(c in inp.columns for c in ['querygen', 'querygen_score'])
+        pta.validate.columns(inp, includes=['querygen', 'querygen_score'])
         inp = inp.reset_index(drop=True)
         querygen = ['\n'.join(np.array(qs.split('\n'))[ss >= self.t].tolist()) for qs, ss in zip(inp['querygen'], inp['querygen_score'])]
         if self.append:
