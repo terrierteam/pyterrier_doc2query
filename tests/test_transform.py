@@ -26,5 +26,5 @@ class TestTransform(unittest.TestCase):
         doc2query.append = True
         res = doc2query(pd.DataFrame([], columns=['docno', 'text', 'something_else']))
         self.assertEqual(list(res.columns), ['docno', 'text', 'something_else'])
-        with self.assertRaises(pta.inspect.InspectionError):
+        with self.assertRaises(pta.inspect.InspectError):
             doc2query(pd.DataFrame([], columns=['docno', 'something_else'])) # missing text column
