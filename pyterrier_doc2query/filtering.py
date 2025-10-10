@@ -29,7 +29,9 @@ class QueryScorer(pt.Transformer):
             scorer_inp['text'].extend([text] * len(queries))
             scorer_inp['docno'].extend([docno] * len(queries))
         scorer_inp['qid'] = list(range(len(scorer_inp['query'])))
-        dout = self.scorer(pd.DataFrame(scorer_inp))
+        scorer_inp = pd.DataFrame(scorer_inp)
+        if len(scorer_inp) > 0:
+            dout = self.scorer(scorer_inp)
         return inp.assign(querygen_score=[dout['score'].values[s] for s in slices])
 
 
