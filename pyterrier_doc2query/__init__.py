@@ -98,5 +98,4 @@ class Doc2Query(pt.Transformer):
         rtr = ['\n'.join(gens) for gens in chunked(outputs, self.num_samples)]
         return rtr
 
-
 __all__ = ['Doc2Query', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore', 'Artefact']
