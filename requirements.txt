@@ -5,3 +5,4 @@ torch
 sentencepiece
 GitPython
 npids
+pyterrier-alpha

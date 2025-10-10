@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pyterrier as pt
+import pyterrier_alpha as pta
 
 
 class QueryScorer(pt.Transformer):
@@ -14,19 +15,23 @@ class QueryScorer(pt.Transformer):
 
     def transform(self, inp: pd.DataFrame) -> pd.DataFrame:
         """Applies the scoring transformation."""
+        pta.validate.document_frame(inp, extra_columns=['text', 'querygen'])
         slices = []
         scorer_inp = {
             'query': [],
             'text': [],
         }
-        for text, querygen in zip(inp['text'], inp['querygen']):
+        for text, querygen, docno in zip(inp['text'], inp['querygen'], inp['docno']):
             queries = querygen.split('\n')
             start_idx = len(scorer_inp['query'])
             slices.append(slice(start_idx, start_idx+len(queries)))
             scorer_inp['query'].extend(queries)
             scorer_inp['text'].extend([text] * len(queries))
+            scorer_inp['docno'].extend([docno] * len(queries))
         scorer_inp['qid'] = list(range(len(scorer_inp['query'])))
-        dout = self.scorer(pd.DataFrame(scorer_inp))
+        scorer_inp = pd.DataFrame(scorer_inp)
+        if len(scorer_inp) > 0:
+            dout = self.scorer(scorer_inp)
         return inp.assign(querygen_score=[dout['score'].values[s] for s in slices])
 
 
@@ -43,11 +48,12 @@ class QueryFilter(pt.Transformer):
 
     def transform(self, inp: pd.DataFrame) -> pd.DataFrame:
         """Applies the filtering transformation."""
-        assert all(c in inp.columns for c in ['querygen', 'querygen_score'])
+        pta.validate.document_frame(inp, extra_columns=['querygen', 'querygen_score', 'text'])
         inp = inp.reset_index(drop=True)
         querygen = ['\n'.join(np.array(qs.split('\n'))[ss >= self.t].tolist()) for qs, ss in zip(inp['querygen'], inp['querygen_score'])]
         if self.append:
-            inp = inp.assign(text=inp['text'] + '\n' + pd.Series(querygen))
+            if len(inp) > 0:
+                inp = inp.assign(text=inp['text'] + '\n' + pd.Series(querygen))
             inp = inp.drop(['querygen', 'querygen_score'], axis='columns')
         else:
             querygen_score = inp['querygen_score'].apply(lambda row: row[row >= self.t])

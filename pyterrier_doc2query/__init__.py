@@ -1,7 +1,8 @@
-__version__ = '0.1.1'
+__version__ = '0.2.0'
 
 import math
 import pyterrier as pt
+import pyterrier_alpha as pta
 import pandas as pd
 import torch
 from transformers import T5Tokenizer, T5TokenizerFast, T5ForConditionalGeneration
@@ -38,6 +39,7 @@ class Doc2Query(pt.Transformer):
             fast_tokenizer: If True, uses the fast tokenizer.
             device: The device to use for inference. If None, defaults to 'cuda' if available, otherwise 'cpu'.
         """
+        self.checkpoint = checkpoint
         self.num_samples = num_samples
         self.doc_attr = doc_attr
         self.append = append
@@ -56,16 +58,19 @@ class Doc2Query(pt.Transformer):
         else:
             warn('consider setting fast_tokenizer=True; it speeds up inference considerably')
             self.tokenizer = T5Tokenizer.from_pretrained(checkpoint)
+        self.fast_tokenizer = fast_tokenizer
         self.model = T5ForConditionalGeneration.from_pretrained(checkpoint)
         self.model.to(self.device)
         self.model.eval()
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Applied the query generation transformation."""
-        if self.doc_attr not in df.columns:
-            raise ValueError(f'{self.doc_attr} missing')
+        with pta.validate.any(df) as v:
+            v.document_frame(extra_columns=[self.doc_attr])
+            v.result_frame(extra_columns=[self.doc_attr])
+            v.columns(includes=[self.doc_attr])
         it = chunked(iter(df[self.doc_attr]), self.batch_size)
-        if self.verbose:
+        if self.verbose and len(df) > 0:
             it = pt.tqdm(it, total=math.ceil(len(df)/self.batch_size), unit='d', desc='doc2query')
         output = []
         for docs in it:
@@ -97,6 +102,5 @@ class Doc2Query(pt.Transformer):
         outputs = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)
         rtr = ['\n'.join(gens) for gens in chunked(outputs, self.num_samples)]
         return rtr
-
 
 __all__ = ['Doc2Query', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore', 'Artefact']

@@ -6,6 +6,7 @@ import lz4.block
 import pyterrier as pt
 from typing import Optional
 from npids import Lookup
+import pyterrier_alpha as pta
 from . import Artefact
 
 
@@ -227,21 +228,27 @@ def _lz4_read(f, start, end, limit_k):
 
 class QueryScoreStoreScorer(pt.Transformer):
     def __init__(self, scorer_store, limit_k=None):
-        self.store = scorer_store
+        self.scorer_store = scorer_store
         self.limit_k = limit_k
 
     def transform(self, inp):
-        return inp.assign(**self.store.lookup(inp.docno, self.limit_k))
+        pta.validate.document_frame(inp, extra_columns=['text', 'querygen'])
+        return inp.assign(**self.scorer_store.lookup(inp.docno, self.limit_k))
 
 
 class Doc2QueryStoreGenerator(pt.Transformer):
     def __init__(self, d2q_store, limit_k=None, append=False):
-        self.store = d2q_store
+        self.d2q_store = d2q_store
         self.limit_k = limit_k
         self.append = append
 
     def transform(self, inp):
-        res = self.store.lookup(inp.docno, self.limit_k)
+        if self.append:
+            pta.validate.document_frame(inp, extra_columns=['text'])
+        else:
+            pta.validate.document_frame(inp)
+
+        res = self.d2q_store.lookup(inp.docno, self.limit_k)
         if self.append:
             return inp.assign(text=inp['text'] + '\n' + res['querygen'])
-        return inp.assign(**self.store.lookup(inp.docno, self.limit_k))
+        return inp.assign(**self.d2q_store.lookup(inp.docno, self.limit_k))
