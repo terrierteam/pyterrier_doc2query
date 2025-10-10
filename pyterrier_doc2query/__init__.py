@@ -65,7 +65,7 @@ class Doc2Query(pt.Transformer):
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Applied the query generation transformation."""
-        with pt.validate.any(df) as v:
+        with pta.validate.any(df) as v:
             v.document_frame(extra_columns=[self.doc_attr])
             v.result_frame(extra_columns=[self.doc_attr])
             v.columns(includes=[self.doc_attr])
