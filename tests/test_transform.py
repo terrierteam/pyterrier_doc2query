@@ -1,8 +1,7 @@
 import pandas as pd
 import unittest
-import pyterrier as pt
-pt.init()
 import pyterrier_doc2query
+import pyterrier_alpha as pta
 
 class TestTransform(unittest.TestCase):
     def test_transform(self):
@@ -27,5 +26,5 @@ class TestTransform(unittest.TestCase):
         doc2query.append = True
         res = doc2query(pd.DataFrame([], columns=['docno', 'text', 'something_else']))
         self.assertEqual(list(res.columns), ['docno', 'text', 'something_else'])
-        with self.assertRaises(ValueError):
+        with self.assertRaises(pta.inspect.InspectionError):
             doc2query(pd.DataFrame([], columns=['docno', 'something_else'])) # missing text column
