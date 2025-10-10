@@ -39,6 +39,7 @@ class Doc2Query(pt.Transformer):
             fast_tokenizer: If True, uses the fast tokenizer.
             device: The device to use for inference. If None, defaults to 'cuda' if available, otherwise 'cpu'.
         """
+        self.checkpoint = checkpoint
         self.num_samples = num_samples
         self.doc_attr = doc_attr
         self.append = append
@@ -57,13 +58,17 @@ class Doc2Query(pt.Transformer):
         else:
             warn('consider setting fast_tokenizer=True; it speeds up inference considerably')
             self.tokenizer = T5Tokenizer.from_pretrained(checkpoint)
+        self.fast_tokenizer = fast_tokenizer
         self.model = T5ForConditionalGeneration.from_pretrained(checkpoint)
         self.model.to(self.device)
         self.model.eval()
 
     def transform(self, df: pd.DataFrame) -> pd.DataFrame:
         """Applied the query generation transformation."""
-        pta.validate.columns(df, includes=[self.doc_attr])
+        with pt.validate.any(df) as v:
+            v.document_frame(extra_columns=[self.doc_attr])
+            v.result_frame(extra_columns=[self.doc_attr])
+            v.columns(includes=[self.doc_attr])
         it = chunked(iter(df[self.doc_attr]), self.batch_size)
         if self.verbose and len(df) > 0:
             it = pt.tqdm(it, total=math.ceil(len(df)/self.batch_size), unit='d', desc='doc2query')
