@@ -20,6 +20,7 @@ class QueryScorer(pt.Transformer):
         scorer_inp = {
             'query': [],
             'text': [],
+            'docno': []
         }
         for text, querygen, docno in zip(inp['text'], inp['querygen'], inp['docno']):
             queries = querygen.split('\n')
