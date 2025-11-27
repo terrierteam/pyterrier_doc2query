@@ -1,4 +1,4 @@
-python-terrier>=0.5.0
+pyterrier>=1.0.0
 pandas
 transformers
 torch
