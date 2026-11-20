@@ -117,12 +117,49 @@ using Doc2Query.
     bm25 = pt.terrier.Retriever.from_dataset("vaswani", "terrier_stemmed", wmodel="BM25")
     bm25 >> pt.get_text(dataset) >> doc2query >> pt.text.scorer(body_attr="querygen", wmodel="BM25")
 
+ZeroGR Query Generator (ITQG)
+----------------------------------------
+
+In addition to Doc2Query, the plugin also includes the instruction-tuned query generator from
+`ZeroGR <https://github.com/luxinyayaya/ZeroGR>`__ (Sun et al. 2025), a framework for zero-shot generative
+retrieval. It is based on a Llama-3.2-1B-Instruct checkpoint fine-tuned on the OpenInstIR instruction corpus,
+and generates diverse pseudo-queries from a document and a natural-language task instruction.
+:class:`~pyterrier_doc2query.ITQG` is used in the same way as :class:`~pyterrier_doc2query.Doc2Query`:
+
+.. code-block:: python
+    :caption: Generate queries from documents using ZeroGR's query generator
+
+    import pyterrier_doc2query
+    itqg = pyterrier_doc2query.ITQG()
+    itqg([{"docno" : "d1", "text" : sample_doc}])
+
+The resulting dataframe will have an additional ``"querygen"`` column (or, with ``append=True``, the generated
+queries will be appended to the document text).
+
+By default, :class:`~pyterrier_doc2query.ITQG` loads
+`luxinyayaya/ZeroGR-Query-Generator <https://huggingface.co/luxinyayaya/ZeroGR-Query-Generator>`_. You can pass
+a different checkpoint, number of queries per document, or a task instruction:
+
+.. code-block:: python
+
+    itqg = pyterrier_doc2query.ITQG(checkpoint='some/other/qg', num_samples=8,
+                                    instruction='Retrieve document relevant to the given query.')
+
+:class:`~pyterrier_doc2query.ITQG` performs inference with `vLLM <https://docs.vllm.ai/>`_, so a CUDA-compatible
+GPU is required. vLLM is an optional dependency of the package, and is not installed by default:
+
+.. code-block:: console
+    :caption: Install ``pyterrier-doc2query`` with vLLM support
+
+    pip install pyterrier-doc2query[vllm]
+
 API Documentation
 ----------------------------------------
 
 **Core Functionality**
 
 .. autoclass:: pyterrier_doc2query.Doc2Query
+.. autoclass:: pyterrier_doc2query.ITQG
 
 **Filtering Poor Generated Queries**
 
@@ -144,3 +181,7 @@ References
 	:link: https://cs.uwaterloo.ca/~jimmylin/publications/Nogueira_Lin_2019_docTTTTTquery-v2.pdf
 
 .. cite.dblp:: conf/ecir/GospodinovMM23
+
+.. cite:: zerogr
+	:citation: Sun, Kong, Ma, Wang, Yin, de Rijke, Ren, and Yang. ZeroGR: A Generalizable and Scalable Framework for Zero-Shot Generative Retrieval. 2025.
+	:link: https://arxiv.org/abs/2510.10419
