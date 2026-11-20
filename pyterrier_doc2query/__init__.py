@@ -12,6 +12,7 @@ import re
 from warnings import warn
 from .artefact import Artefact
 from .filtering import QueryScorer, QueryFilter
+from .itqg import ITQG
 from .stores import Doc2QueryStore, QueryScoreStore
 
 
@@ -103,4 +104,4 @@ class Doc2Query(pt.Transformer):
         rtr = ['\n'.join(gens) for gens in chunked(outputs, self.num_samples)]
         return rtr
 
-__all__ = ['Doc2Query', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore', 'Artefact']
+__all__ = ['Doc2Query', 'ITQG', 'QueryScorer', 'QueryFilter', 'Doc2QueryStore', 'QueryScoreStore', 'Artefact']

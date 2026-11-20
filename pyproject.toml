@@ -24,6 +24,9 @@ classifiers = [
 ]
 dynamic = ["version", "dependencies"]
 
+[project.optional-dependencies]
+vllm = ["vllm"]
+
 [tool.setuptools.packages.find]
 exclude = ["tests"]
 

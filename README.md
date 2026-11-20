@@ -97,6 +97,36 @@ bm25 >> pt.get_text(dataset) >> doc2query >> pt.text.scorer(body_attr="querygen"
 
 ```
 
+## ZeroGR Query Generator (ITQG)
+
+In addition to Doc2Query, the plugin also includes the instruction-tuned query generator from
+[ZeroGR](https://github.com/luxinyayaya/ZeroGR) (Sun et al. 2025), a framework for zero-shot generative
+retrieval. It is based on a Llama-3.2-1B-Instruct checkpoint fine-tuned on the OpenInstIR instruction corpus,
+and generates diverse pseudo-queries from a document and a natural-language task instruction. `ITQG` is used in the same way
+as `Doc2Query`:
+
+```python
+import pyterrier_doc2query
+itqg = pyterrier_doc2query.ITQG()
+itqg([{"docno" : "d1", "text" : sample_doc}])
+```
+
+The resulting dataframe will have an additional `"querygen"` column (or, with `append=True`, the generated
+queries will be appended to the document text).
+
+By default, `ITQG` loads [`luxinyayaya/ZeroGR-Query-Generator`](https://huggingface.co/luxinyayaya/ZeroGR-Query-Generator).
+You can pass a different checkpoint, number of queries per document, or a task instruction:
+
+```python
+itqg = pyterrier_doc2query.ITQG(checkpoint='some/other/qg', num_samples=8,
+                                instruction='Retrieve document relevant to the given query.')
+```
+
+`ITQG` performs inference with [vLLM](https://docs.vllm.ai/), so a CUDA-compatible GPU is required. vLLM is
+an optional dependency of the package, and is not installed by default:
+
+    pip install pyterrier-doc2query[vllm]
+
 ## Examples
 
 Check out out the notebooks, even on Colab:
@@ -111,6 +141,7 @@ We use a PyTerrier transformer to rewrite documents by doc2query.
 
   - [Nogueira20]: Rodrigo Nogueira and Jimmy Lin. From doc2query to docTTTTTquery. https://cs.uwaterloo.ca/~jimmylin/publications/Nogueira_Lin_2019_docTTTTTquery-v2.pdf
   - [Gospodinov23]: Mitko Gospodinov, Sean MacAvaney, and Craig Macdonald. Doc2Query--: When Less is More. ECIR 2023.
+  - [Sun25]: Weiwei Sun, Keyi Kong, Xinyu Ma, Shuaiqiang Wang, Dawei Yin, Maarten de Rijke, Zhaochun Ren, Yiming Yang. ZeroGR: A Generalizable and Scalable Framework for Zero-Shot Generative Retrieval. arXiv preprint arXiv:2510.10419, 2025.
   - [Macdonald20]: Craig Macdonald, Nicola Tonellotto. Declarative Experimentation inInformation Retrieval using PyTerrier. Craig Macdonald and Nicola Tonellotto. In Proceedings of ICTIR 2020. https://arxiv.org/abs/2007.14271
 
 ## Credits
